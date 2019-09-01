@@ -1,11 +1,12 @@
 ---
 layout: post
-title: Fake News Classification Using Spark
+title: Cross-Validation Using Spark
 ---
 
+## Topics
+#### Cross-Validation, Apache Spark, Machine Learning Pipelines, Naive-Bayes Classification
+
 ![_config.yml]({{ site.baseurl }}/images/santander/spark.png) 
-
-
 
   Fake news and the credibility of news articles have been a central issue of in today's digitized society. Fake news in this context is defined as a news article that spreads inaccurate or false information that can influence the political opinion of a reader. This is an important issue because of how quickly these news articles can travel through social media sites like Facebook and Twitter. Spark's MLib (Machine Learning Library) Framework is capable of creating pipelines that ingest and preprocess the text documents,train statistical models, and distribute the workload of cross-validation across several nodes.
 
@@ -26,7 +27,7 @@ A pipeline can be thought of as an object that holds the automated steps require
  
  
 #### Count Vectorization
-\hspace{\parindent} After removing stop words, what is left with is a bag of words for each text. With this bag of words, a count vectorizer is used to get the count of how many times a word occurs in a particular piece of text. This will give us our term frequencies of a particular word i in article j.
+ After removing stop words, what is left with is a bag of words for each text. With this bag of words, a count vectorizer is used to get the count of how many times a word occurs in a particular piece of text. This will give us our term frequencies of a particular word i in article j.
 
 
 ![_config.yml]({{ site.baseurl }}/images/fakenews_spark/tf_score.png)
@@ -102,7 +103,7 @@ Given that there can multiple possible values for a Laplace smoothing parameter 
 
 ```python
 
-nb = NaiveBayes() ##does not like renamed target column. leave this blank
+nb = NaiveBayes()
 paramGrid = ParamGridBuilder() \
 		.addGrid(nb.smoothing, [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]) \
 		.build()
@@ -141,3 +142,74 @@ cv = CrossValidator(estimator=data_prep_pipe, estimatorParamMaps=paramGrid,evalu
 4. The parallelism parameter is the number of threads that each computational node that will evaluate a particular fold. This will give our Cross-Validation process a different level of granularity in terms of parallelism[7]. 
 
 
+#### Set Up Cross-Validation
+#### Perform a Train-Test Split
+We are going to split our data set into two sections, a training set and testing set. Cross-validation will run on the training set, and we will have a hold out set of new data to test the best possible model.
+
+```python
+df_cv = df.select(['target','text'])
+
+
+(training,testing) = df_cv.randomSplit([0.9,0.1]) # 90% training, 10% testing
+```
+
+
+#### Run Cross Validation
+
+```python
+cvModel = cv.fit(training)
+
+results = cvModel.transform(testing)
+```
+
+#### Get Metrics
+We will be using a simple Confusion Matrix to analyze the accurace of our best model.
+```python
+
+acc_eval = MulticlassClassificationEvaluator()
+acc = acc_eval.evaluate(results)
+best_model = cvModel.bestModel
+
+
+from pyspark.mllib.evaluation import MulticlassMetrics
+# Create (prediction, label) pairs
+predictionAndLabel = results.select("label", "prediction").rdd
+
+# Generate confusion matrix
+metrics = MulticlassMetrics(predictionAndLabel)
+print( metrics.confusionMatrix())
+
+
+DenseMatrix([[ 303., 61.],
+              [ 15., 244.]])
+```
+
+#### Time Analysis
+With the introduction of a parallelism parameter in the Cross-Validator object, a time analysis was conducted to examine the performance across varying levels of parallelism. After using 8 computational nodes, there is no significant speed up in times, in fact, in some instances it performed worse. This is because of the communication overhead it takes to manage the process across a high number of nodes. It also can be noted that a parallelism level of 8 appears to be the sweet spot for this particular task. 
+
+![_config.yml]({{ site.baseurl }}/images/fakenews_spark/time2.png)
+
+
+
+#### Conclusion
+
+Spark allows developers to build fast and scalable applications. Spark's built-in MLib library is a versatile framework that can handle various machine learning tasks, such as cross-validation. The Cross-Validator Object in Spark's MLib library gives engineers the ability to define their machine learning pipelines, fix what parameters they want analyzed, and even the level of granularity of parallelism. This gives teams tremendous amount of flexibility on how they distribute work loads. Spark is able to turn a computationally expensive task like Cross-Validation, into an embarrassingly parallel solution. 
+
+
+#### References
+1. Extracting, transforming and selecting features. (n.d.). Retrieved December 3, 2018, from spark.apache.org/docs/latest/ml-features.html$\#$vectorassembler 
+
+2. Jurafsky, D. (n.d.). Text Classification and Naive Bayes. Lecture. Retrieved December 4, 2018, from https://web.stanford.edu/class/cs124/lec/naivebayes.pdf 
+	
+3. Huang, O. (2017, July 17) Applying Multinomial Naive Bayes to NLP Problems: A Practical Explanation. Retrieved December 4, 2018, from https://medium.com/syncedreview/applying-multinomial-naive-bayes-to-nlp-problems-a-practical-explanation-4f5271768ebf 
+
+4. Brownlee, J. (2018, May 21). A Gentle Introduction to k-fold Cross-Validation. Retrieved December 3, 2018, from https://machinelearningmastery.com/k-fold-cross-validation/ 
+
+5. Portilla, J. (2018) Spark and Python For Big Data, online course, Natural Language Processing. Retrieved November 8, 2018 from https://www.udemy.com/spark-and-python-for-big-data-with-pyspark/learn/v4/t/lecture/7026564?start=485
+
+6.  ML Tuning: Model selection and hyperparameter tuning. (n.d.). Retrieved December 2, 2018, from https://spark.apache.org/docs /latest/ml-tuning.html 
+	
+7. Pentreath, N., & Cutler, B. (2018, November 2). Model Parallelism in Spark ML Cross Validation. Lecture presented at Spark AI Summit 2018. 
+
+8. What is Apache Spark. (n.d.). Retrieved November 3, 2018, from https://hortonworks.com/apache/spark/ 
+	
