@@ -127,7 +127,7 @@ You can also wrap the plot() function around vector of factors to get a barplot.
 plot(data$gender)
 ```
 
-![](eda_files/figure-markdown_github/unnamed-chunk-8-1.png)
+![](/images/eda_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 ### Creating Pivot Tables
 
@@ -148,7 +148,7 @@ Numeric variables on the other hand are quite different. While we can still use 
 hist(data$temp)
 ```
 
-![](eda_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](/images/eda_files/figure-markdown_github/unnamed-chunk-10-1.png)
 
 We can also perform some handy statistical functions on numeric vectors.
 
@@ -209,7 +209,7 @@ Now if we tried to plot the variable, we can see some instights. Using the plot(
 plot(data$ageGroup)
 ```
 
-![](eda_files/figure-markdown_github/unnamed-chunk-14-1.png)
+![](/images/eda_files/figure-markdown_github/unnamed-chunk-14-1.png)
 
 ### Zoning In On Your Data
 
@@ -349,7 +349,7 @@ As you can see, the pulse variable has two humps, instead of your normal "bell" 
 hist(data$pulse)
 ```
 
-![](eda_files/figure-markdown_github/unnamed-chunk-21-1.png)
+![](/images/eda_files/figure-markdown_github/unnamed-chunk-21-1.png)
 
 ### Introducing Conditionals: IF-Else
 
@@ -391,7 +391,7 @@ data <- data %>% mutate(pulse_group = ifelse(pulse > 72, "High",
 barplot(table(data$pulse_group))
 ```
 
-![](eda_files/figure-markdown_github/unnamed-chunk-23-1.png)
+![](/images/eda_files/figure-markdown_github/unnamed-chunk-23-1.png)
 
 ### The PitFalls of If-Else and A Case for Case Statements
 
@@ -432,7 +432,7 @@ table(data$pulse_group)
 barplot(table(data$pulse_group))
 ```
 
-![](eda_files/figure-markdown_github/unnamed-chunk-24-1.png)
+![](/images/eda_files/figure-markdown_github/unnamed-chunk-24-1.png)
 
 ### Putting It All Together
 
