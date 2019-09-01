@@ -1,0 +1,335 @@
+---
+title: "Exploratory Data Analysis with R and DPLYR"
+author: "Antonio Ruiz"
+date: "August 12, 2019"
+output: rmarkdown::github_document
+---
+
+### Who is this for ?
+
+This quick little walk through is meant to highlight some of the power of Exploratory Data Analysis with R's DPLYR package. It is assumed you have some basic programming knowledge of R. If you dont, no worries, there's plenty of resources out there to help. 
+https://www.datamentor.io/r-programming/operator/
+
+### What is Exploratory Data Analysis
+
+Exploratory data analysis is arguably the most crucial step of any data science experiment. It is in this phase of the data science life cycle that the data is evaluated, variables are cataloged, and we can begin to come up with a strategy on how we want further analyze our dataset. Poor preliminary data analysis could spell trouble and unnecessary head aches down the road. 
+
+### What is DPLYR
+DPLYR is a R library that is meant to make your data cleansing experience feel natural and readable. DPLYR uses the "%>%" operator (called the pipe operator) to apply some sort of action or change to the dataset. With just a few short commands, we can create new variables, filter out unecesaary rows, and columns, and even transform our dataset. This is an introductory tutorial, so we are going to be focusing on the filter() and mutate() functions. 
+
+
+
+
+### Libraries
+
+We will be featuring the DPLYR library. For more information, click the following link. If you don't yet have DPLYR installed on RStudio, run the install.packages('dplyr') command.
+https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html
+
+```{r results="hide" }
+# install.packages('dplyr')
+library(dplyr)
+```
+
+### Loading Data
+
+The read.table() function is used to read a tabular text file of data into a dataframe.
+One common mistake that many beginners make is trying to load data outside of their current
+working directory. A good habit of mine is to use to the setwd() command to tell R to where my 
+I am going to be working out of. 
+
+```{r}
+# Set the working directory to my folder where my files will be located
+setwd("C:/Users/tony/Desktop/workspace/ML/EDA")
+
+# Syntax)
+#   dataframe <- read.table("Filepath", header=True)
+data <- read.table("hw03data.txt", header=TRUE)
+
+```
+
+## Basic Exploratory Analysis
+### Gaining A Feel for the Data
+
+The head() command is typically the first thing I go to when the data is loaded. If the data us properly loaded, you will be able to see the first five observations from your table. Similarly, you can use the tail() command to view the last five observations.
+```{r}
+head(data)
+```
+
+You also are not limited to five observations, use the 'n' parameter within the function to change the number of observation shown. 
+```{r}
+tail(data, n = 10 )
+```
+
+Not all data is the same. We can see that some of the columns are categorical (or as R likes to call them, factors),such as Virus or ageGroup. While others are numerical, such as pulse and temperature. At first glance, it appeared that the ID column was numerical, but as you can see using the tail() function, the last variable is a character. mWe can use the str() to analyze get a sense of our data and confirm our suspecions. 
+```{r}
+# Basic summary
+str(data)
+
+```
+
+
+### Grabbing a column
+
+If you want to examiine the contents of a column for in-depth, using the dollar sign infront of the dataframe object will prompt the user to select a single column. This will return the column as what is commonly known as a vector. For those of you unfamiliar with vectors, they are a one dimensional data structure that you can think of similar to arrays. If you are not familiar with vectors in R, don't worry! Click on the link and learn about them! [linked phrase] (https://www.datamentor.io/r-programming/vector/)
+```{r  R.options=list(max.print=10) }
+data$gender
+
+```
+
+
+### Basic Data Types
+#### Factor variables
+
+Factor variables are categorical values of are that represent a set of distinct groupings. For example, our data table above, Gender is a factor variable with two levels (Male, and Female). Wait a minute? What about the Id variable? Well since, ID is only used to represent a unique row, you can think of it as its own kind of distinct categorical variable. We can use the table() function to view the frequency count of the groupings in our data. 
+
+```{r}
+table(data$gender)
+```
+
+#### Plotting Factor Variables with Barplots
+You can also wrap the plot() function around vector of factors to get a barplot. Barplots are used to get the counts of how many rows belong to each factor variable. 
+```{r}
+plot(data$gender)
+
+```
+
+
+### Creating Pivot Tables
+```{r}
+table(data$gender, data$virus)
+
+```
+
+### Numeric variables
+
+Numeric variables on the other hand are quite different. While we can still use the table() function to find the the distribution of the variables within a column, it is much better to use a histogram plot to find out the distribution While they looks similar, it is important to understand that Histograms are used to analyze the distribution of NUMERICAL data. Barplots are used to analyze the frequency of CATEGORICAL variables.
+
+```{r}
+
+hist(data$temp)
+
+```
+
+We can also perform some handy statistical functions on numeric vectors.
+```{r}
+
+# min(): returns the minimum value of a vector
+min(data$temp)
+# max(): returns the maximum value of a vector
+max(data$temp)
+# sd(): returns the standard distribution value of a vector
+sd(data$temp)
+# mean(): returns the mean of a vector()
+mean(data$temp)
+
+```
+
+
+###  Fixing Data
+We can keep ID as a categorical (factor) variable, since it is just a unique identifier for our rows and we can't extract meaningful insights from it. AgeGroup how ever can be vague. It is displayed as integer, but we don't know if a 0 indicate someone who is young or someone who is old. This could be a problem. Let's tell R that this variable should be treated as a factor, and not an integer.
+
+```{r}
+## Note: You turn ageGroup back into an integer using as.integer(data$ageGroup)
+data$ageGroup <- as.factor(data$ageGroup)
+
+```
+
+Let's use str() again to see if this variable has been transformed
+```{r}
+str(data)
+```
+
+
+Now if we tried to plot the variable, we can see some instights. Using the plot() function on a categorical variable will give us a frequency barplot of groupings in the vector
+```{r}
+plot(data$ageGroup)
+```
+
+
+
+
+### Zoning In On Your Data
+### The DPLYR Select Command
+
+You can use the select command to grab a subset of the columns in a dataframe.
+
+```{r  R.options=list(max.print=50) }
+data %>% select(id, gender, ageGroup)
+```
+
+### Unselecting columns
+What if you wanted to select everything but a handful of columns? While there's no Unselect() function, you can apply a minus sign to the columns within select() function, to grab everything except those columns specified.
+```{r  R.options=list(max.print=50) }
+data %>% select(-id,-ageGroup)
+
+```
+
+### The DPLYR: Filter Command
+Just as you can select columns, you can also select certain rows. You do this by FILTERing your data frame. Let's say that we wanted to examine our female population in the dataset. The filter() function allows you to pass in a boolean statement. A boolean statement is a statement that can be evaluated as true or false. In this case, any rows that do not have the value of 'F' in there gender column will be evaluated as False, and therefore be filtered out.
+```{r  R.options=list(max.print=50) }
+# NOTE:  the single equal sign (=) is used as the assignment operator.
+# Use the double equal sign (==) when using boolean statements. 
+
+data %>% filter(gender == "F")
+
+```
+
+### Chaining Filters Together
+You are also not limited to one filter, you can chain multiple conditional expression together using logical operators. 
+If you are new to R, here is a link to R's logical operators. {link}
+
+```{r  R.options=list(max.print=50) }
+# The & symbol is the 'AND' Operator
+# This sentence read: Give me all the patients who are female AND who are of ageGroup 2 AND who have a virus.
+# This means that all rows returned must have those conditions must be satisfied.
+data %>% filter(gender == "F" & ageGroup == 2 & virus == "Y")
+
+```
+
+### Other Options To Filtering
+
+Let's say there were a group of subjects we wanted to examine in our datset that we couldn't exactly filter using the columns. A case like this might occur when we might want to match observations to a specific set of values. Let's grab the data for id 108, 15F, and 12F.
+ 
+```{r R.options=list(max.print=50) }
+
+# The | symbol is the 'OR' Operator
+# This reads as: Give me the patients who have an id of 108 OR 15F or 12F.
+# For OR logical statements, only one of the those boolean expressions need to be true,
+# and since you have three boolean expressions on a distinct factor variable, you get back three rows.
+
+head(data %>% filter(id == "108" | id == "15F" | id == "12F" ))
+
+```
+
+### What's %in% Here?
+
+That wasn't so bad for three observations, but what if there was more? It would be nice to store these id's in some sort of data structure where they can be used again in the future. Let's pass those Id's to a vector and use the %in% keyword to extract those items from the list. The %in% keyword let's us save unique values in a data structure so we can reuse them.
+
+
+```{r R.options=list(max.print=50) }
+
+interesting_ids <- c('108','15F', '12F')
+
+
+data %>% filter(id %in% interesting_ids)
+```
+
+
+### Creating New Variables From Old Ones
+ As you can see, the pulse variable has two humps, instead of your normal "bell" shaped distribution. Therefore, we can say that this variable is bimodal, depending on what kind of analysis you are trying to perform, bimodal distributions may pose a challenge. Can we transform this tricky numeric variables into a factor variable with a more uniform distribution? 
+ 
+```{r}
+hist(data$pulse)
+```
+
+
+
+### Introducing Conditionals: IF-Else
+
+If you already come from a programming background, then you will already be familiar with condtional statements. They work slightly different in R, but the syntax should feel similar.
+
+```{r}
+
+
+# SYNTAX
+# ifelse( BOOLEAN EXPRESSION, RESULT IS TRUE, RESULT IS FALSE)
+
+age <- 21
+
+buyBeer <- ifelse(age >= 21, "Yes, I am are old enough", "No too young :( ")
+
+print("Can you buy beer?")
+print(buyBeer)
+
+
+
+```
+
+### Introducting MUTATE()
+
+The majority of the time, the features we want in the data are not explictly contained in a column. Feature engineering is a huge topic in data science and one that cannot be covered in a single blog post. The main idea is that we  can create and extract better variables from the ones that are already present in our dataset. One such case is creating categorical variables from numerical data. DPLYR'S MUTATE keyword, in combination with conditional statements, allows us to do this. In this example, we will be creating a new variable called 'pulse_group', which will be an evenly distributed categorical variable for the pulse variable. 
+
+```{r R.options=list(max.print=50) }
+
+# Syntax for MUTATE
+# data frame %>% mutate(NEW VARIABLE = LOGIC FROM Old Variables)
+
+
+data <- data %>% mutate(pulse_group = ifelse(pulse > 72, "High",
+                                              ifelse(pulse > 58, "Medium", 
+                                                "Low")))
+
+
+barplot(table(data$pulse_group))
+```
+
+
+### The PitFalls of If-Else and A Case for Case Statements
+You may have noticed the that tricky ifelse statement. If-Else statements are great for simple one-liners, but as you saw in the previouse example, they are not build to scale. A better alternative would be a case statement, which are handy way to define and scale conditional statements. 
+
+```{r R.options=list(max.print=50) }
+
+
+# ###############################################
+# IFELSE                                      ##
+# ##############################################
+# Syntax: 
+# ifelse( [condition 1], result 1 , 
+#          ifelse( [condition 2], result 2,
+#                  ifelse(.......)))
+#     VS
+# Case When                                  ##
+# ##############################################
+# Syntax 
+# case_when(
+#   [condition 1] ~ result 1
+#   [condition 1] ~ result 2,
+#   ....
+#   [condition x] ~ result x
+# #############################################
+
+data <- data %>% mutate(pulse_group = case_when( 
+                                                pulse > 72 ~ "High",
+                                                pulse > 58 ~ "Medium",
+                                                TRUE ~ "Low"))
+
+table(data$pulse_group)
+
+barplot(table(data$pulse_group))
+
+
+```
+
+### Putting It All Together
+
+The beautiful thing abour DPLYR is that you can chain functions together usng the %>% operator, to create powerful, yet easy to read data frames.
+For example, let's say we wanted to create a new dataframe with the following restrictions.
+
+  * Must be all men
+  * A new categorical variable, pulse_group, must be created from pulse using MUTATE()
+  * Select only the ID, pulse_group, and virus
+  
+```{r R.options=list(max.print=50) }
+new_data <- data %>% filter(gender == 'M') %>% 
+                    mutate(temp_group = case_when( 
+                                                temp > 99 ~ "High",
+                                                temp > 95 ~ "Medium",
+                                                TRUE ~ "Low")) %>%
+                    select(id, pulse_group, virus )
+
+
+head(new_data)
+
+```
+
+### Some new insights
+With our new dataset, let's explore how virus is distributed among the pulse grou variable. 
+```{r R.options=list(max.print=50) }
+table(new_data$pulse_group, new_data$virus)
+
+```
+
+
+
+### Conclusion
+If you been following along, you should have gained some familiarity with R's DPLYR package. There's alot more that we didn't cover in this article. 
