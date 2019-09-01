@@ -1,5 +1,3 @@
-
-
 ---
 layout: post
 title: Exploratory Data Analysis with R and DPLYR
