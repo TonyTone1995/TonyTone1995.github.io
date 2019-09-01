@@ -1,7 +1,10 @@
-Exploratory Data Analysis with R and DPLYR
-================
-Antonio Ruiz
-August 12, 2019
+---
+layout: post
+title: Exploratory Data Analysis with R and DPLYR
+date: August 12. 2019
+---
+
+
 
 ### Who is this for ?
 
