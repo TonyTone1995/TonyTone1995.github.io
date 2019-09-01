@@ -6,6 +6,8 @@ date: August 12. 2019
 ## Topics
 ##### Data Exploration, R
 
+![](/images/eda_files/hex-dplyr.png)
+
 ### Who is this for ?
 
 This quick little walk through is meant to highlight some of the power of Exploratory Data Analysis with R's DPLYR package. It is assumed you have some basic programming knowledge of R. If you dont, no worries, there's plenty of resources out there to help. <https://www.datamentor.io/r-programming/operator/>
