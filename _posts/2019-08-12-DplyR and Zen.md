@@ -3,7 +3,7 @@ layout: post
 title: Zen and DPLYR
 date: August 12. 2019
 ---
-### Topics
+## Topics
 ##### Data Exploration, R
 
 ### Who is this for ?
